@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Play,
     Pause,
@@ -12,12 +12,39 @@ import {
     HelpCircle,
     X,
 } from "lucide-react";
+import GraphView from "./pages/GraphViewPage";
+import GraphEditor from "./pages/GraphEditorPage";
+import type { Graph } from "./types/Graph";
+import type { SearchStep } from "./types/SearchStep";
+import { parseInput } from "./utils/ParseInput";
 type Mode = "visualize" | "edit";
+const DEFAULT_INPUT = `
+A
+B
+A - 20: C D E
+C - 15: F
+D - 6: F I
+F - 10: B
+I - 8: B G
+E - 7: K G
+G - 5: B H
+H - 12: B
+B - 0:
+`;
 
 function App() {
+    const [graph, setGraph] = useState<Graph>();
+    const [steps, setSteps] = useState<SearchStep[]>([]);
+    const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [mode, setMode] = useState<Mode>("visualize");
+    useEffect(() => {
+        setGraph(parseInput(DEFAULT_INPUT));
+    }, []);
+    useEffect(() => {
+        console.log(graph);
+    });
     return (
-        <div className="min-h-screen bg-[#E4E3E0] text-[#141414] font-sans selection:bg-[#141414] selection:text-[#E4E3E0]">
+        <div className="min-h-screen bg-[#E4E3E0] text-[#141414] font-sans selection:bg-[#141414] selection:text-[#E4E3E0] flex flex-col">
             <header className="border-b border-[#141414] p-6 flex justify-between items-center">
                 <div className="flex items-center gap-6">
                     <div>
@@ -30,9 +57,9 @@ function App() {
                     </div>
                 </div>
             </header>
-            <main className="grid grid-cols-1 lg:grid-cols-12 h-[calc(100vh-100px)]">
-                <div className="lg:col-span-4 border-r border-[#141414] flex flex-col overflow-hidden">
-                    <div className="border-t border-[#141414] p-6 backdrop-blur-sm">
+            <main className="grid grid-cols-1 lg:grid-cols-12 flex flex-1 overflow-hidden">
+                <div className="lg:col-span-4 border-r border-[#141414] flex flex-col h-full overflow-hidden">
+                    <div className="p-6 backdrop-blur-sm">
                         <nav className="flex bg-white/50 p-1 rounded-full border border-[#141414] w-fit mx-auto">
                             <button
                                 onClick={() => setMode("visualize")}
@@ -129,164 +156,101 @@ function App() {
                         ) : (
                             <div className="flex flex-col gap-6">
                                 {/* {steps.length > 0 && ( */}
-                                    <section className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
-                                        <h2 className="font-serif italic text-sm uppercase opacity-50 tracking-wider">
-                                            Playback Controls
-                                        </h2>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            <button
-                                                // onClick={handleReset}
-                                                className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all"
-                                            >
-                                                <RotateCcw size={18} />
-                                                <span className="text-[9px] mt-1 uppercase font-bold">
-                                                    Reset
-                                                </span>
-                                            </button>
-                                            <button
-                                                // onClick={() =>
-                                                //     setIsPlaying(!isPlaying)
-                                                // }
-                                                className="col-span-2 flex flex-col items-center justify-center p-3 border border-[#141414] bg-[#141414] text-[#E4E3E0] hover:opacity-90 transition-all"
-                                            >
-                                                {/* {isPlaying ? (
+                                <section className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4">
+                                    <h2 className="font-serif italic text-sm uppercase opacity-50 tracking-wider">
+                                        Playback Controls
+                                    </h2>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button
+                                            // onClick={handleReset}
+                                            className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all"
+                                        >
+                                            <RotateCcw size={18} />
+                                            <span className="text-[9px] mt-1 uppercase font-bold">
+                                                Reset
+                                            </span>
+                                        </button>
+                                        <button
+                                            // onClick={() =>
+                                            //     setIsPlaying(!isPlaying)
+                                            // }
+                                            className="col-span-2 flex flex-col items-center justify-center p-3 border border-[#141414] bg-[#141414] text-[#E4E3E0] hover:opacity-90 transition-all"
+                                        >
+                                            <Play size={18} />
+                                            <span className="text-[9px] mt-1 uppercase font-bold">
+                                                Play
+                                            </span>
+                                            {/* {isPlaying ? (
                                                     <Pause size={18} />
                                                 ) : (
                                                     <Play size={18} />
                                                 )} */}
-                                                {/* <span className="text-[9px] mt-1 uppercase font-bold">
+                                            {/* <span className="text-[9px] mt-1 uppercase font-bold">
                                                     {isPlaying
                                                         ? "Pause"
                                                         : "Play"}
                                                 </span> */}
-                                            </button>
-                                            <button
-                                                // onClick={handleNext}
-                                                // disabled={
-                                                //     currentStepIndex >=
-                                                //     steps.length - 1
-                                                // }
-                                                className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-inherit"
-                                            >
-                                                <SkipForward size={18} />
-                                                <span className="text-[9px] mt-1 uppercase font-bold">
-                                                    Step
-                                                </span>
-                                            </button>
-                                        </div>
+                                        </button>
+                                        <button
+                                            // onClick={handleNext}
+                                            // disabled={
+                                            //     currentStepIndex >=
+                                            //     steps.length - 1
+                                            // }
+                                            className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-inherit"
+                                        >
+                                            <SkipForward size={18} />
+                                            <span className="text-[9px] mt-1 uppercase font-bold">
+                                                Step
+                                            </span>
+                                        </button>
+                                    </div>
 
-                                        <div>
-                                            <label className="text-[10px] uppercase font-bold opacity-50 block mb-1">
-                                                {/* Speed: {playbackSpeed}ms */}
-                                            </label>
-                                            <input
-                                                type="range"
-                                                min="100"
-                                                max="2000"
-                                                step="100"
-                                                // value={playbackSpeed}
-                                                // onChange={(e) =>
-                                                //     setPlaybackSpeed(
-                                                //         parseInt(
-                                                //             e.target.value,
-                                                //         ),
-                                                //     )
-                                                // }
-                                                className="w-full accent-[#141414]"
-                                            />
-                                        </div>
-                                        <p className="text-[10px] opacity-40 mt-2 italic">
-                                            Tip: The algorithm prioritizes nodes
-                                            with the lowest heuristic value.
-                                        </p>
-                                    </section>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold opacity-50 block mb-1">
+                                            {/* Speed: {playbackSpeed}ms */}
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min="100"
+                                            max="2000"
+                                            step="100"
+                                            // value={playbackSpeed}
+                                            // onChange={(e) =>
+                                            //     setPlaybackSpeed(
+                                            //         parseInt(
+                                            //             e.target.value,
+                                            //         ),
+                                            //     )
+                                            // }
+                                            className="w-full accent-[#141414]"
+                                        />
+                                    </div>
+                                </section>
                                 {/* )} */}
                             </div>
                         )}
                     </div>
 
-                    {/* Status Bar */}
-                    {/* <div className="border-t border-[#141414] p-6 bg-white/30 backdrop-blur-sm">
+                    <div className="border-t border-[#141414] p-6 bg-white/30 backdrop-blur-sm">
                         <h2 className="font-serif italic text-sm uppercase opacity-50 tracking-wider mb-2">
                             Algorithm Status
                         </h2>
                         <div className="font-mono text-xs min-h-[3em]"></div>
-                    </div> */}
+                    </div>
                 </div>
 
-                {/* Right Panel: Visualization / Editor */}
                 <div className="lg:col-span-8 p-6 flex flex-col gap-6 overflow-hidden">
                     <div className="flex-1 min-h-0">
-                      <div>
-                        helloworld
-                      </div>
-                        {/* {mode === "visualize" ? (
+                        {mode === "visualize" ? (
                             <GraphView
-                                data={graphData}
-                                currentNode={currentStep?.currentNode || null}
-                                openSet={currentStep?.openSet || []}
-                                closedSet={currentStep?.closedSet || []}
-                                path={currentStep?.path || []}
+                                data={graph}
+                                step={steps[currentStepIndex]}
                             />
                         ) : (
-                            <GraphEditor
-                                data={graphData}
-                                onChange={handleGraphChange}
-                            />
-                        )} */}
+                            <GraphEditor data={graph} />
+                        )}
                     </div>
-                    {/* Data Grid / Step Info */}
-                    {/* {mode === "visualize" && (
-                        <div className="h-48 border border-[#141414] bg-white overflow-hidden flex flex-col animate-in slide-in-from-bottom-8">
-                            <div className="grid grid-cols-3 border-b border-[#141414] bg-[#141414] text-[#E4E3E0] text-[10px] font-bold uppercase tracking-widest">
-                                <div className="p-2 border-r border-[#E4E3E0]/20">
-                                    Open Set (Priority Queue)
-                                </div>
-                                <div className="p-2 border-r border-[#E4E3E0]/20">
-                                    Closed Set (Explored)
-                                </div>
-                                <div className="p-2">Current Path</div>
-                            </div>
-                            <div className="grid grid-cols-3 flex-1 overflow-y-auto font-mono text-[10px]">
-                                <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
-                                    {currentStep?.openSet.map((id) => (
-                                        <span
-                                            key={id}
-                                            className="px-1 bg-blue-100 border border-blue-300 rounded"
-                                        >
-                                            {id}(h=
-                                            {graphData.nodes[id]?.heuristic})
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
-                                    {currentStep?.closedSet.map((id) => (
-                                        <span
-                                            key={id}
-                                            className="px-1 bg-stone-100 border border-stone-300 rounded"
-                                        >
-                                            {id}
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="p-3 flex flex-wrap gap-1 content-start">
-                                    {currentStep?.path.map((id, i) => (
-                                        <React.Fragment key={id}>
-                                            <span className="px-1 bg-green-100 border border-green-300 rounded font-bold">
-                                                {id}
-                                            </span>
-                                            {i <
-                                                currentStep.path.length - 1 && (
-                                                <span className="opacity-30">
-                                                    →
-                                                </span>
-                                            )}
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )} */}
                 </div>
             </main>
         </div>
