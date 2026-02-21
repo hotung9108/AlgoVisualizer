@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Play,
     Pause,
@@ -12,6 +12,7 @@ import {
     HelpCircle,
     X,
 } from "lucide-react";
+import { bestFirstSearch } from "./utils/BestFirstSearch";
 import GraphView from "./pages/GraphViewPage";
 import GraphEditor from "./pages/GraphEditorPage";
 import type { Graph } from "./types/Graph";
@@ -37,12 +38,50 @@ function App() {
     const [steps, setSteps] = useState<SearchStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [mode, setMode] = useState<Mode>("visualize");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [playbackSpeed, setPlaybackSpeed] = useState(800);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     useEffect(() => {
-        setGraph(parseInput(DEFAULT_INPUT));
+        // setGraph(parseInput(DEFAULT_INPUT));
+        const parsed = parseInput(DEFAULT_INPUT);
+        setGraph(parsed);
+        setSteps(parsed.nodes ? bestFirstSearch(parsed) : []);
+        setCurrentStepIndex(0);
     }, []);
+
     useEffect(() => {
-        console.log(graph);
-    });
+        if (!isPlaying) {
+            if (timerRef.current) clearTimeout(timerRef.current);
+            return;
+        }
+        if (currentStepIndex < steps.length - 1) {
+            timerRef.current = setTimeout(() => {
+                setCurrentStepIndex((idx) => idx + 1);
+            }, playbackSpeed);
+        } else {
+            setIsPlaying(false);
+        }
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, [isPlaying, currentStepIndex, steps.length, playbackSpeed]);
+
+    const handlePlayPause = () => {
+        if (currentStepIndex >= steps.length - 1) {
+            setCurrentStepIndex(0);
+        }
+        setIsPlaying((v) => !v);
+    };
+    const handleReset = () => {
+        setCurrentStepIndex(0);
+        setIsPlaying(false);
+    };
+    const handleNext = () => {
+        if (currentStepIndex < steps.length - 1) {
+            setCurrentStepIndex((idx) => idx + 1);
+        }
+    };
     return (
         <div className="min-h-screen bg-[#E4E3E0] text-[#141414] font-sans selection:bg-[#141414] selection:text-[#E4E3E0] flex flex-col">
             <header className="border-b border-[#141414] p-6 flex justify-between items-center">
@@ -162,7 +201,7 @@ function App() {
                                     </h2>
                                     <div className="grid grid-cols-4 gap-2">
                                         <button
-                                            // onClick={handleReset}
+                                            onClick={handleReset}
                                             className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all"
                                         >
                                             <RotateCcw size={18} />
@@ -171,32 +210,24 @@ function App() {
                                             </span>
                                         </button>
                                         <button
-                                            // onClick={() =>
-                                            //     setIsPlaying(!isPlaying)
-                                            // }
+                                            onClick={handlePlayPause}
                                             className="col-span-2 flex flex-col items-center justify-center p-3 border border-[#141414] bg-[#141414] text-[#E4E3E0] hover:opacity-90 transition-all"
                                         >
-                                            <Play size={18} />
+                                            {isPlaying ? (
+                                                <Pause size={18} />
+                                            ) : (
+                                                <Play size={18} />
+                                            )}
                                             <span className="text-[9px] mt-1 uppercase font-bold">
-                                                Play
+                                                {isPlaying ? "Pause" : "Play"}
                                             </span>
-                                            {/* {isPlaying ? (
-                                                    <Pause size={18} />
-                                                ) : (
-                                                    <Play size={18} />
-                                                )} */}
-                                            {/* <span className="text-[9px] mt-1 uppercase font-bold">
-                                                    {isPlaying
-                                                        ? "Pause"
-                                                        : "Play"}
-                                                </span> */}
                                         </button>
                                         <button
-                                            // onClick={handleNext}
-                                            // disabled={
-                                            //     currentStepIndex >=
-                                            //     steps.length - 1
-                                            // }
+                                            onClick={handleNext}
+                                            disabled={
+                                                currentStepIndex >=
+                                                steps.length - 1
+                                            }
                                             className="flex flex-col items-center justify-center p-3 border border-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-inherit"
                                         >
                                             <SkipForward size={18} />
@@ -208,21 +239,19 @@ function App() {
 
                                     <div>
                                         <label className="text-[10px] uppercase font-bold opacity-50 block mb-1">
-                                            {/* Speed: {playbackSpeed}ms */}
+                                            Speed: {playbackSpeed}ms
                                         </label>
                                         <input
                                             type="range"
                                             min="100"
                                             max="2000"
                                             step="100"
-                                            // value={playbackSpeed}
-                                            // onChange={(e) =>
-                                            //     setPlaybackSpeed(
-                                            //         parseInt(
-                                            //             e.target.value,
-                                            //         ),
-                                            //     )
-                                            // }
+                                            value={playbackSpeed}
+                                            onChange={(e) =>
+                                                setPlaybackSpeed(
+                                                    parseInt(e.target.value),
+                                                )
+                                            }
                                             className="w-full accent-[#141414]"
                                         />
                                     </div>

@@ -41,7 +41,6 @@ export default function GraphView({ data, step }: GraphViewProps) {
         setNodePositions(pos);
     }, [data]);
 
-
     const getMousePos = (e: React.MouseEvent) => {
         const svg = svgRef.current;
         if (!svg) return { x: 0, y: 0 };
@@ -80,7 +79,6 @@ export default function GraphView({ data, step }: GraphViewProps) {
     const onMouseUp = () => {
         setDragging(null);
     };
-
 
     const edges = data.edges
         .map((edge) => {
@@ -195,9 +193,12 @@ export default function GraphView({ data, step }: GraphViewProps) {
                 </div>
             </div>
             <div className="h-48 border border-[#141414] bg-white overflow-hidden flex flex-col animate-in slide-in-from-bottom-8">
-                <div className="grid grid-cols-4 border-b border-[#141414] bg-[#141414] text-[#E4E3E0] text-[10px] font-bold uppercase tracking-widest">
+                <div className="grid grid-cols-5 border-b border-[#141414] bg-[#141414] text-[#E4E3E0] text-[10px] font-bold uppercase tracking-widest">
                     <div className="p-2 border-r border-[#E4E3E0]/20">
                         Phát triển thạng thái
+                    </div>
+                    <div className="p-2 border-r border-[#E4E3E0]/20">
+                        Trạng thái kề
                     </div>
                     <div className="p-2 border-r border-[#E4E3E0]/20">
                         Open Set (Priority Queue) Danh sách L
@@ -207,25 +208,59 @@ export default function GraphView({ data, step }: GraphViewProps) {
                     </div>
                     <div className="p-2">Current Path</div>
                 </div>
-                <div className="grid grid-cols-4 flex-1 overflow-y-auto font-mono text-[10px]">
-                    <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start"></div>
+                <div className="grid grid-cols-5 flex-1 overflow-y-auto font-mono text-[10px]">
                     <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
-                        {/* {currentStep?.openSet.map(id => (
-                    <span key={id} className="px-1 bg-blue-100 border border-blue-300 rounded">{id}(h={graphData.nodes[id]?.heuristic})</span>
-                  ))} */}
+                        {step?.currentNode && (
+                            <span className="px-1 bg-orange-100 border border-orange-300 rounded font-bold">
+                                {step.currentNode}
+                            </span>
+                        )}
                     </div>
                     <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
-                        {/* {currentStep?.closedSet.map(id => (
-                    <span key={id} className="px-1 bg-stone-100 border border-stone-300 rounded">{id}</span>
-                  ))} */}
+                        {step?.currentNode &&
+                            data?.nodes[step.currentNode]?.neighbors.map(
+                                (neighborId) => (
+                                    <span
+                                        key={neighborId}
+                                        className="px-1 bg-orange-50 border border-orange-200 rounded"
+                                    >
+                                        {neighborId}
+                                    </span>
+                                ),
+                            )}
+                    </div>
+                    <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
+                        {step?.L.map((node) => (
+                            <span
+                                key={node.id}
+                                className="px-1 bg-blue-100 border border-blue-300 rounded"
+                            >
+                                {node.id}(h={node.heuristic})
+                            </span>
+                        ))}
+                    </div>
+                    <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">
+                        {step?.D.map((id) => (
+                            <span
+                                key={id}
+                                className="px-1 bg-stone-100 border border-stone-300 rounded"
+                            >
+                                {id}
+                            </span>
+                        ))}
                     </div>
                     <div className="p-3 flex flex-wrap gap-1 content-start">
-                        {/* {currentStep?.path.map((id, i) => (
-                    <React.Fragment key={id}>
-                      <span className="px-1 bg-green-100 border border-green-300 rounded font-bold">{id}</span>
-                      {i < currentStep.path.length - 1 && <span className="opacity-30">→</span>}
-                    </React.Fragment>
-                  ))} */}
+                        {step?.parent.map((id, i) => (
+                            <span
+                                key={id}
+                                className="px-1 bg-green-100 border border-green-300 rounded font-bold"
+                            >
+                                {id}
+                                {i < step.parent.length - 1 && (
+                                    <span className="opacity-30">→</span>
+                                )}
+                            </span>
+                        ))}
                     </div>
                 </div>
             </div>
