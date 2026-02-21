@@ -174,19 +174,19 @@ export default function GraphView({ data, step }: GraphViewProps) {
                         <div className="absolute bottom-4 left-4 flex flex-col gap-1 text-[10px] bg-white/80 p-2 rounded border border-stone-200 backdrop-blur-sm">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#f59e0b] border border-stone-400" />
-                                <span>Current Node</span>
+                                <span>Node đang xét</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#3b82f6] border border-stone-400" />
-                                <span>Open Set (Waiting)</span>
+                                <span>Node trong danh sách</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#6b7280] border border-stone-400" />
-                                <span>Closed Set (Explored)</span>
+                                <span>Node đã xét</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-[#10b981] border border-stone-400" />
-                                <span>Final Path</span>
+                                <span>Kết quả</span>
                             </div>
                         </div>
                     </div>
@@ -201,12 +201,12 @@ export default function GraphView({ data, step }: GraphViewProps) {
                         Trạng thái kề
                     </div>
                     <div className="p-2 border-r border-[#E4E3E0]/20">
-                        Open Set (Priority Queue) Danh sách L
+                        Danh sách đang xét (L)
                     </div>
                     <div className="p-2 border-r border-[#E4E3E0]/20">
-                        Closed Set (Explored) Danh sách D
+                        Danh sách đã đi qua (D)
                     </div>
-                    <div className="p-2">Current Path</div>
+                    <div className="p-2">Đường hiện tại</div>
                 </div>
                 <div className="grid grid-cols-5 flex-1 overflow-y-auto font-mono text-[10px]">
                     <div className="p-3 border-r border-[#141414] flex flex-wrap gap-1 content-start">

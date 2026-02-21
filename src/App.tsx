@@ -34,6 +34,7 @@ B - 0:
 `;
 
 function App() {
+    const [input, setInput] = useState(DEFAULT_INPUT);
     const [graph, setGraph] = useState<Graph>();
     const [steps, setSteps] = useState<SearchStep[]>([]);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -49,7 +50,47 @@ function App() {
         setSteps(parsed.nodes ? bestFirstSearch(parsed) : []);
         setCurrentStepIndex(0);
     }, []);
+    useEffect(() => {
+        // Khi graph thay đổi, cập nhật input (chỉ khi không phải do textarea)
+        if (graph && mode === "edit") {
+            setInput(graphToInput(graph));
+        }
+    }, [graph, mode]);
+    function graphToInput(graph: Graph): string {
+        if (!graph || !graph.nodes) return "";
+        let lines = [];
+        lines.push(graph.startNode || "");
+        lines.push(graph.endNode || "");
+        Object.values(graph.nodes).forEach((node) => {
+            lines.push(
+                `${node.id} - ${node.heuristic}: ${node.neighbors.join(" ")}`,
+            );
+        });
+        return lines.join("\n");
+    }
+    const handleInitialize = () => {
+        const parsed = parseInput(input);
+        setGraph(parsed);
+        setSteps(parsed.nodes ? bestFirstSearch(parsed) : []);
+        setCurrentStepIndex(0);
+    };
 
+    const handleEditorChange = (newGraph: Graph) => {
+        // Tạo lại edges từ nodes
+        const nodes = newGraph.nodes;
+        const edges = Object.values(nodes).flatMap((node) =>
+            node.neighbors.map((neighborId) => ({
+                id: `${node.id}_${neighborId}`,
+                from: node.id,
+                to: neighborId,
+            })),
+        );
+        const graphWithEdges = { ...newGraph, edges };
+        setGraph(graphWithEdges);
+        setInput(graphToInput(graphWithEdges));
+        setSteps(graphWithEdges.nodes ? bestFirstSearch(graphWithEdges) : []);
+        setCurrentStepIndex(0);
+    };
     useEffect(() => {
         if (!isPlaying) {
             if (timerRef.current) clearTimeout(timerRef.current);
@@ -153,29 +194,22 @@ function App() {
                                     </div>
                                 </div>
                                 <textarea
-                                    // value={input}
-                                    // onChange={(e) => {
-                                    //     setInput(e.target.value);
-                                    //     setGraphData(
-                                    //         parseInput(e.target.value),
-                                    //     );
-                                    // }}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
                                     onDragOver={(e) => e.preventDefault()}
                                     onDrop={(e) => {
                                         e.preventDefault();
                                         const file = e.dataTransfer.files[0];
-                                        // if (file) {
-                                        //     const reader = new FileReader();
-                                        //     reader.onload = (event) => {
-                                        //         const content = event.target
-                                        //             ?.result as string;
-                                        //         setInput(content);
-                                        //         setGraphData(
-                                        //             parseInput(content),
-                                        //         );
-                                        //     };
-                                        //     reader.readAsText(file);
-                                        // }
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                                const content = event.target
+                                                    ?.result as string;
+                                                setInput(content);
+                                                setGraph(parseInput(content));
+                                            };
+                                            reader.readAsText(file);
+                                        }
                                     }}
                                     className="w-full h-96 bg-transparent border border-[#141414] p-4 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-[#141414] resize-none"
                                     placeholder="Enter graph data..."
@@ -185,7 +219,7 @@ function App() {
                                     the right.
                                 </p>
                                 <button
-                                    // onClick={handleInitialize}
+                                    onClick={handleInitialize}
                                     className="w-full mt-4 bg-[#141414] text-[#E4E3E0] py-3 font-bold uppercase tracking-widest text-xs hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                                 >
                                     <Save size={14} />
@@ -277,7 +311,10 @@ function App() {
                                 step={steps[currentStepIndex]}
                             />
                         ) : (
-                            <GraphEditor data={graph} />
+                            <GraphEditor
+                                data={graph}
+                                onChange={handleEditorChange}
+                            />
                         )}
                     </div>
                 </div>
