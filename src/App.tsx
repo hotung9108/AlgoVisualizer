@@ -4,13 +4,10 @@ import {
     Pause,
     RotateCcw,
     SkipForward,
-    Upload,
     Info,
     Edit3,
     Eye,
     Save,
-    HelpCircle,
-    X,
 } from "lucide-react";
 import { bestFirstSearch } from "./utils/BestFirstSearch";
 import GraphView from "./pages/GraphViewPage";
@@ -295,12 +292,12 @@ function App() {
                         )}
                     </div>
 
-                    <div className="border-t border-[#141414] p-6 bg-white/30 backdrop-blur-sm">
+                    {/* <div className="border-t border-[#141414] p-6 bg-white/30 backdrop-blur-sm">
                         <h2 className="font-serif italic text-sm uppercase opacity-50 tracking-wider mb-2">
                             Algorithm Status
                         </h2>
                         <div className="font-mono text-xs min-h-[3em]"></div>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="lg:col-span-8 p-6 flex flex-col gap-6 overflow-hidden">
